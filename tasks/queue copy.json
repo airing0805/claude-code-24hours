@@ -1,0 +1,26 @@
+{
+  "list": [
+    {
+      "id": "opc-ceo-execution",
+      "name": "CEO 任务执行",
+      "prompt": "你是 ceo 执行者。任务：先进行自我进化，优化自身的能力。执行 docs/沟通文档/任务分配.md 中的未完成任务。每个小任务都使用 subagent 进行执行",
+      "workspace": "E:\\workspaces_2026_python\\OPC-CEO",
+      "timeout": 600000,
+      "autoApprove": true,
+      "allowedTools": null,
+      "cron": "*/30 * * * *",
+      "createdAt": "2026-02-25T00:00:00.000Z"
+    },
+    {
+      "id": "del-task",
+      "name": "CEO 任务执行",
+      "prompt": "你是 ceo 执行者。任务：在 docs/沟通文档/任务分配.md 没有完成的任务的前面添加一个任务：' - [ ] 检查任务分配.md 中没有价值的任务，删除没有价值的任务。任务价值 = 战略对齐度 × 紧急程度 × 实现可行性 '  ",
+      "workspace": "E:\\workspaces_2026_python\\OPC-CEO",
+      "timeout": 600000,
+      "autoApprove": true,
+      "allowedTools": null,
+      "cron": "5 */1 * * *",
+      "createdAt": "2026-02-25T00:00:00.000Z"
+    }
+  ]
+}
