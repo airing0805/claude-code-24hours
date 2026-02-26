@@ -2,7 +2,8 @@
 chcp 65001 >nul
 setlocal enabledelayedexpansion
 
-cd /d "e:\workspaces_2026_python\claude_code_cookbook\claude-code-24h-integration"
+:: 获取脚本所在目录并切换
+cd /d "%~dp0.."
 
 echo ========================================
 echo   Claude Code 任务提交工具
@@ -19,7 +20,7 @@ if "%~1"=="" (
     echo.
     echo 示例:
     echo   add-task.bat "检查代码中的TODO注释"
-    echo   add-task.bat "运行测试" -w "e:/myproject"
+    echo   add-task.bat "运行测试" -w "../myproject"
     echo.
     set /p TASK_INPUT="请输入任务描述: "
 ) else (
