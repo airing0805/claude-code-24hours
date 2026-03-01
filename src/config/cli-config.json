@@ -1,0 +1,28 @@
+{
+  "defaultCliType": "claude",
+  "cliTypes": {
+    "claude": {
+      "command": "claude",
+      "description": "Claude AI CLI",
+      "parameters": {
+        "prompt": { "method": "stdin", "required": true },
+        "workspace": { "method": "cwd", "required": false },
+        "autoApprove": { "flag": "--dangerously-skip-permissions", "required": false },
+        "allowedTools": { "flag": "--allowedTools", "join": ",", "required": false }
+      },
+      "supports": ["prompt", "workspace", "autoApprove", "allowedTools"]
+    },
+    "qoder": {
+      "command": "qodercli",
+      "description": "Qoder CLI",
+      "parameters": {
+        "prompt": { "flag": "-p", "required": true },
+        "workspace": { "flag": "-w", "required": false },
+        "autoApprove": { "flag": "--yolo", "required": false },
+        "allowedTools": { "flag": "--allowed-tools", "join": ",", "required": false }
+      },
+      "supports": ["prompt", "workspace", "autoApprove", "allowedTools", "quiet"],
+      "defaultFlags": ["-q"]
+    }
+  }
+}
