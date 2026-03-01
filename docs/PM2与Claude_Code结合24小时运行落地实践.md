@@ -45,6 +45,9 @@ npm install -g pm2
 
 # Claude CLI 已配置并可执行
 claude --version
+
+# 验证 PM2 安装
+pm2 --version
 ```
 
 ### 2.2 项目结构
@@ -54,21 +57,640 @@ claude-code-24h-integration/
 ├── ecosystem.config.js      # PM2 配置文件
 ├── src/
 │   ├── auto-runner.js       # 任务调度核心
-│   └── add-task.js          # 任务提交工具
+│   ├── add-task.js          # 任务提交 CLI 工具
+│   └── lib/
+│       └── utils.js         # 工具函数
 ├── scripts/
 │   ├── add-task.bat         # Windows 任务提交脚本
-│   └── start-pm2.bat        # PM2 启动脚本
+│   ├── start-pm2.bat        # PM2 启动脚本（Windows）
+│   └── init-tasks.js        # 任务系统初始化脚本
 ├── tasks/
 │   ├── queue.json           # 待执行任务队列
 │   ├── completed.json       # 已完成任务记录
 │   ├── failed.json          # 失败任务记录
-│   └── running.json         # 当前运行任务状态
+│   ├── running.json         # 当前运行任务状态
+│   ├── scheduled.json       # 定时任务配置
+│   └── queue.json           # 任务队列备份
 ├── logs/
 │   ├── runner-out.log       # 标准输出日志
 │   └── runner-error.log     # 错误日志
 └── docs/
     └── PM2与Claude_Code结合24小时运行落地实践.md
 ```
+
+### 2.3 任务提交工具
+
+#### 方式一：Windows 批处理脚本（推荐）
+
+```batch
+:: 基本用法
+scripts\add-task.bat "检查代码中的TODO注释"
+
+:: 带工作目录
+scripts\add-task.bat "运行测试" -w "e:/myproject"
+
+:: 带超时时间（毫秒）
+scripts\add-task.bat "数据迁移" -t 1800000
+
+:: 自动批准（跳过权限询问）
+scripts\add-task.bat "紧急修复" -y
+
+:: 组合使用
+scripts\add-task.bat "代码审查" -w "e:/project" -t 300000 -y
+
+:: 交互式输入（不带参数）
+scripts\add-task.bat
+```
+
+#### 方式二：命令行工具
+
+```bash
+# 基本用法
+node src/add-task.js "检查代码中的TODO注释"
+
+# 指定工作目录
+node src/add-task.js "运行测试" --workspace e:/myproject
+# 或简写
+node src/add-task.js "运行测试" -w e:/myproject
+
+# 设置超时时间（毫秒）
+node src/add-task.js "数据迁移" --timeout 1800000
+# 或简写
+node src/add-task.js "数据迁移" -t 1800000
+
+# 自动确认（跳过权限询问）
+node src/add-task.js "紧急修复" --auto-approve
+# 或简写
+node src/add-task.js "紧急修复" -y
+
+# 限制可用工具（逗号分隔）
+node src/add-task.js "只读操作" --tools Read,Grep,Glob
+
+# 组合使用
+node src/add-task.js "代码审查" -w e:/project -t 300000 -y --tools Read,Grep
+```
+
+#### 任务提交参数说明
+
+| 参数 | 简写 | 默认值 | 说明 |
+|------|------|--------|------|
+| `--workspace` | `-w` | 当前目录 | Claude Code 执行的工作目录 |
+| `--timeout` | `-t` | 600000 (10分钟) | 单任务最大执行时间（毫秒） |
+| `--auto-approve` | `-y` | false | 是否自动批准所有操作 |
+| `--tools` | - | null | 限制可用的工具列表（逗号分隔） |
+
+### 2.4 初始化部署
+
+#### Windows 部署
+
+```batch
+REM 1. 进入整合目录
+cd /d e:\workspaces_2026_python\claude_code_cookbook\claude-code-24h-integration
+
+REM 2. 运行初始化脚本（创建必要的目录和文件）
+node scripts\init-tasks.js
+
+REM 输出示例：
+REM 🔧 初始化 Claude Code 24小时任务系统...
+REM ✅ 创建目录: e:\...\tasks
+REM ✅ 创建目录: e:\...\logs
+REM ✅ 创建任务文件: queue.json
+REM ✅ 创建任务文件: completed.json
+REM ✅ 创建任务文件: failed.json
+REM ✅ 初始化完成！
+
+REM 3. 启动 PM2 服务
+pm2 start ecosystem.config.js
+
+REM 4. 保存 PM2 配置（开机自启需要）
+pm2 save
+
+REM 5. 配置开机自启（仅第一次需要）
+pm2 startup
+REM 按提示执行输出的命令
+
+REM 6. 验证服务状态
+pm2 status
+pm2 logs claude-runner --lines 20
+```
+
+#### Linux/Mac 部署
+
+```bash
+# 1. 进入整合目录
+cd /path/to/claude-code-24h-integration
+
+# 2. 运行初始化脚本
+node scripts/init-tasks.js
+
+# 3. 启动 PM2 服务
+pm2 start ecosystem.config.js
+
+# 4. 保存 PM2 配置
+pm2 save
+
+# 5. 配置开机自启
+pm2 startup
+# 执行输出的命令，例如：
+# sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u yourname --hp /home/yourname
+
+# 6. 验证服务状态
+pm2 status
+pm2 logs claude-runner --lines 20
+```
+
+#### 一键启动脚本
+
+使用提供的批处理脚本快速启动：
+
+```batch
+:: Windows
+scripts\start-pm2.bat
+```
+
+该脚本会自动完成以下操作：
+1. 初始化任务系统
+2. 创建日志目录
+3. 检查并启动 PM2 服务
+4. 显示当前状态和可用命令
+
+### 2.5 开机自启配置
+
+#### Windows 开机自启
+
+**方法一：PM2 Windows 开机启动（推荐）**
+
+```batch
+REM 首次配置（仅需要一次）
+pm2 install pm2-windows-startup
+pm2 save
+
+REM 验证自启配置
+pm2 startup list
+```
+
+**方法二：添加到 Windows 启动文件夹**
+
+```batch
+REM 1. 打开启动文件夹
+shell:startup
+
+REM 2. 创建快捷方式，目标指向：
+e:\workspaces_2026_python\claude_code_cookbook\claude-code-24h-integration\scripts\start-pm2.bat
+
+REM 或创建批处理文件 start-claude.bat，内容：
+@echo off
+cd /d e:\workspaces_2026_python\claude_code_cookbook\claude-code-24h-integration
+pm2 resurrect
+exit
+```
+
+**方法三：Windows 计划任务**
+
+```batch
+REM 打开任务计划程序
+taskschd.msc
+
+REM 创建任务：
+REM - 名称: Claude Runner Autostart
+REM - 触发器: 启动时
+REM - 操作: 启动程序
+REM   程序: pm2.cmd
+REM   参数: resurrect
+REM   起始于: C:\Users\%USERNAME%\AppData\Roaming\npm
+```
+
+#### Linux 开机自启
+
+**systemd 方式（推荐）**
+
+```bash
+# PM2 自动生成 systemd 配置
+pm2 startup
+
+# 按提示执行输出命令，例如：
+# sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u yourname --hp /home/yourname
+
+# 保存当前 PM2 进程列表
+pm2 save
+
+# 手动验证 systemd 服务
+systemctl status pm2-yourname
+systemctl enable pm2-yourname
+```
+
+**crontab 方式**
+
+```bash
+# 编辑 crontab
+crontab -e
+
+# 添加以下行（开机时恢复 PM2 进程）
+@reboot /usr/local/bin/pm2 resurrect
+
+# 或延迟 10 秒启动（等待网络就绪）
+@reboot sleep 10 && /usr/local/bin/pm2 resurrect
+```
+
+**rc.local 方式**
+
+```bash
+# 编辑 /etc/rc.local
+sudo nano /etc/rc.local
+
+# 在 exit 0 前添加：
+/usr/local/bin/pm2 resurrect
+
+# 确保文件有执行权限
+sudo chmod +x /etc/rc.local
+```
+
+### 2.6 运维管理
+
+#### PM2 进程管理命令
+
+```bash
+# 查看所有进程状态
+pm2 list
+
+# 查看特定进程详情
+pm2 describe claude-runner
+
+# 实时监控（仪表板）
+pm2 monit
+
+# 查看实时日志
+pm2 logs claude-runner
+
+# 查看最后 N 行日志
+pm2 logs claude-runner --lines 100
+
+# 查看错误日志
+pm2 logs claude-runner --err
+
+# 查看输出日志
+pm2 logs claude-runner --out
+
+# 清空日志
+pm2 flush
+
+# 重启服务
+pm2 restart claude-runner
+
+# 停止服务
+pm2 stop claude-runner
+
+# 启动服务
+pm2 start claude-runner
+
+# 删除服务
+pm2 delete claude-runner
+
+# 重载服务（零停机）
+pm2 reload claude-runner
+
+# 重启所有服务
+pm2 restart all
+
+# 停止所有服务
+pm2 stop all
+
+# 保存当前进程列表
+pm2 save
+
+# 恢复保存的进程列表
+pm2 resurrect
+```
+
+#### 日志管理
+
+```bash
+# 查看日志文件位置
+pm2 show claude-runner | grep log
+
+# 查看 PM2 日志
+pm2 logs
+
+# 查看文件系统中的日志
+type logs\runner-out.log          # Windows
+tail -f logs/runner-out.log       # Linux/Mac
+
+type logs\runner-error.log        # Windows
+tail -f logs/runner-error.log     # Linux/Mac
+
+# 清理旧日志（保留最近 1000 行）
+pm2 flush
+
+# 日志轮转（防止磁盘占满）
+pm2 install pm2-logrotate
+```
+
+#### 任务队列管理
+
+```bash
+# 查看待执行队列
+type tasks\queue.json
+cat tasks/queue.json
+
+# 查看已完成任务
+type tasks\completed.json
+cat tasks/completed.json
+
+# 查看失败任务
+type tasks\failed.json
+cat tasks/failed.json
+
+# 查看运行中任务
+type tasks\running.json
+cat tasks/running.json
+
+# 查看定时任务配置
+type tasks\scheduled.json
+cat tasks/scheduled.json
+
+# 清空队列（谨慎使用）
+echo {"list":[]} > tasks\queue.json
+
+# 从失败队列重试任务（手动移动到 queue.json）
+```
+
+### 2.7 故障处理
+
+#### 常见问题诊断
+
+**问题 1：PM2 进程离线**
+
+```batch
+REM 症状：pm2 status 显示 status 为 stopped 或 errored
+
+REM 诊断步骤
+pm2 status
+pm2 logs claude-runner --lines 50
+pm2 describe claude-runner
+
+REM 解决方案
+pm2 restart claude-runner
+
+REM 如果持续失败，查看详细错误
+pm2 logs claude-runner --err --lines 100
+```
+
+**问题 2：任务卡住不执行**
+
+```batch
+REM 症状：queue.json 有任务但一直不执行
+
+REM 诊断步骤
+REM 检查 running.json 是否存在残留
+type tasks\running.json
+
+REM 检查 auto-runner 进程是否在运行
+pm2 status
+
+REM 解决方案
+REM 1. 如果 running.json 存在但进程已停止
+del tasks\running.json
+
+REM 2. 重启服务
+pm2 restart claude-runner
+
+REM 3. 验证队列文件格式
+type tasks\queue.json
+REM 确保是有效的 JSON 格式
+```
+
+**问题 3：Claude CLI 找不到**
+
+```batch
+REM 症状：任务失败，日志显示 "claude: command not found"
+
+REM 诊断步骤
+pm2 logs claude-runner --lines 20
+
+REM 解决方案：在 ecosystem.config.js 中添加环境变量
+module.exports = {
+  apps: [{
+    // ... 其他配置 ...
+    env: {
+      NODE_ENV: 'production',
+      PATH: process.env.PATH  // 继承系统 PATH
+    }
+  }]
+}
+REM 然后重启：pm2 reload ecosystem.config.js
+```
+
+**问题 4：内存持续增长**
+
+```batch
+REM 症状：进程内存占用不断上升
+
+REM 诊断步骤
+pm2 monit
+
+REM 解决方案
+REM 1. 调整内存限制（编辑 ecosystem.config.js）
+max_memory_restart: '500M'  // 改为更小值
+
+REM 2. 增加重启频率
+cron_restart: '0 */6 * * *'  // 每 6 小时重启一次
+
+REM 3. 手动重启
+pm2 restart claude-runner
+```
+
+**问题 5：端口占用或文件锁定**
+
+```batch
+REM 症状：进程启动失败
+
+REM 诊断步骤
+REM 检查是否有其他实例在运行
+tasklist | findstr node
+wmic process where "commandline like '%auto-runner%'" get processid
+
+REM 解决方案
+REM 1. 停止所有 PM2 进程
+pm2 stop all
+
+REM 2. 杀死残留的 node 进程
+taskkill /F /IM node.exe
+
+REM 3. 重新启动
+pm2 start ecosystem.config.js
+```
+
+#### 日志分析技巧
+
+```bash
+# 搜索错误关键词
+grep -i "error" logs/runner-error.log
+grep -i "failed" logs/runner-out.log
+
+# 查看特定任务ID的日志
+grep "task-1234567890" logs/runner-out.log
+
+# 查看最近一小时的错误日志
+Get-Content logs\runner-error.log | Select-String "2026-02-2[0-9] (1[0-9]|2[0-3]):"
+```
+
+### 2.8 紧急恢复流程
+
+#### 场景一：系统意外崩溃
+
+```batch
+REM 1. 检查当前状态
+pm2 list
+type tasks\running.json
+
+REM 2. 清理残留状态
+if exist tasks\running.json del tasks\running.json
+
+REM 3. 恢复 PM2 进程
+pm2 resurrect
+
+REM 4. 验证恢复
+pm2 status
+pm2 logs claude-runner --lines 20
+```
+
+#### 场景二：任务文件损坏
+
+```batch
+REM 1. 备份现有文件
+copy tasks\queue.json tasks\queue_backup.json
+copy tasks\completed.json tasks\completed_backup.json
+
+REM 2. 检查文件格式
+type tasks\queue.json
+REM 确保是有效的 JSON 格式
+
+REM 3. 如果损坏，恢复到空状态
+echo {"list":[]} > tasks\queue.json
+echo {"list":[]} > tasks\completed.json
+echo {"list":[]} > tasks\failed.json
+
+REM 4. 重新初始化
+node scripts\init-tasks.js
+
+REM 5. 重启服务
+pm2 restart claude-runner
+```
+
+#### 场景三：PM2 配置丢失
+
+```batch
+REM 1. 重新加载配置文件
+pm2 start ecosystem.config.js
+
+REM 2. 保存配置
+pm2 save
+
+REM 3. 验证
+pm2 list
+```
+
+#### 场景四：完全重置系统
+
+```batch
+REM 1. 停止所有服务
+pm2 stop all
+pm2 delete all
+
+REM 2. 清理 PM2 配置
+pm2 flush
+pm2 cleardump
+
+REM 3. 删除任务文件
+del /Q tasks\*.json
+
+REM 4. 重新初始化
+node scripts\init-tasks.js
+
+REM 5. 重新启动
+pm2 start ecosystem.config.js
+pm2 save
+
+REM 6. 配置开机自启（如需要）
+pm2 install pm2-windows-startup
+pm2 save
+```
+
+#### 场景五：恢复丢失的任务
+
+```batch
+REM 如果 queue.json 被意外清空，可以从备份恢复
+
+REM 1. 检查是否有备份
+dir tasks\*.json
+
+REM 2. 从 completed.json 中提取未完成的任务
+REM 3. 从 failed.json 中提取需要重试的任务
+
+REM 4. 手动重建 queue.json
+```
+
+#### 完整恢复脚本
+
+创建 `scripts/emergency-recover.bat`:
+
+```batch
+@echo off
+chcp 65001 >nul
+echo ========================================
+echo   紧急恢复脚本
+echo ========================================
+
+cd /d "e:\workspaces_2026_python\claude_code_cookbook\claude-code-24h-integration"
+
+echo.
+echo [1/5] 停止所有 PM2 进程...
+pm2 stop all
+
+echo.
+echo [2/5] 清理残留状态...
+if exist "tasks\running.json" del "tasks\running.json"
+
+echo.
+echo [3/5] 备份当前队列...
+if exist "tasks\queue.json" (
+    copy "tasks\queue.json" "tasks\queue_backup_%date:~0,4%%date:~5,2%%date:~8,2%_%time:~0,2%%time:~3,2%%time:~6,2%.json"
+    echo   队列已备份
+)
+
+echo.
+echo [4/5] 重新初始化任务系统...
+node scripts\init-tasks.js
+
+echo.
+echo [5/5] 恢复 PM2 进程...
+pm2 resurrect
+
+echo.
+echo ========================================
+echo   恢复完成！
+echo ========================================
+pm2 status
+echo.
+echo 如需查看日志，运行:
+echo   pm2 logs claude-runner
+echo.
+pause
+```
+
+### 2.9 快速参考卡片
+
+| 操作 | 命令 |
+|------|------|
+| 添加任务 | `scripts\add-task.bat "任务描述"` |
+| 查看状态 | `pm2 status` |
+| 查看日志 | `pm2 logs claude-runner` |
+| 重启服务 | `pm2 restart claude-runner` |
+| 停止服务 | `pm2 stop claude-runner` |
+| 查看队列 | `type tasks\queue.json` |
+| 清理残留 | `del tasks\running.json` |
+| 紧急恢复 | `pm2 resurrect` |
+| 保存配置 | `pm2 save` |
 
 ## 3. 核心组件详解
 
@@ -163,7 +785,7 @@ node src/add-task.js "只读操作" --tools read_file,search_codebase
 
 ```bash
 # 1. 进入整合目录
-cd e:\workspaces_2026_python\claude_code_cookbook\claude-code-24h-integration
+cd /d e:\workspaces_2026_python\claude_code_cookbook\claude-code-24h-integration
 
 # 2. 创建日志目录（如果不存在）
 mkdir logs

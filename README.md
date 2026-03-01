@@ -25,16 +25,15 @@
 **Windows 用户（推荐）：**
 
 ```bash
-# 使用启动脚本（先进入项目目录）
-cd claude-code-24h-integration
+# 使用启动脚本
+cd e:\workspaces_2026_python\claude_code_cookbook\claude-code-24h-integration
 scripts\start-pm2.bat
 ```
 
 **或使用 PM2 命令：**
 
 ```bash
-# 先进入项目目录
-cd claude-code-24h-integration
+cd e:\workspaces_2026_python\claude_code_cookbook\claude-code-24h-integration
 pm2 start ecosystem.config.js
 pm2 save
 ```
@@ -62,7 +61,7 @@ scripts\add-task.bat
 scripts\add-task.bat "检查代码中的TODO注释"
 
 # 指定工作目录
-scripts\add-task.bat "运行测试" -w "../myproject"
+scripts\add-task.bat "运行测试" -w "e:/myproject"
 ```
 
 **方式二：Node.js 命令行**
@@ -95,7 +94,7 @@ node src/add-task.js "任务描述" --tools Read,Write,Bash
       "id": "task-001",
       "name": "任务名称",
       "prompt": "你的任务描述",
-      "workspace": "../your-project",
+      "workspace": "E:/your/project",
       "timeout": 600000,
       "autoApprove": true,
       "allowedTools": null,

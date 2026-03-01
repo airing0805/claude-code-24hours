@@ -2,7 +2,7 @@ module.exports = {
   apps: [{
     name: 'claude-runner',
     script: './src/auto-runner.js',
-    cwd: './',
+    cwd: 'e:/workspaces_2026_python/claude_code_cookbook/claude-code-24h-integration',
     interpreter: 'node',
 
     // 进程管理
@@ -19,6 +19,11 @@ module.exports = {
     merge_logs: true,
     out_file: './logs/runner-out.log',
     error_file: './logs/runner-error.log',
+    
+    // 日志轮转配置 - 控制日志长度
+    log_type: 'json', // 可选：'json' 或 'raw'
+    log_max_size: '1M', // 单个日志文件最大10MB
+    max_logs: 5, // 最多保留5个日志文件
 
     // 环境变量
     env: {

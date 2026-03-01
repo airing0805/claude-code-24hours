@@ -7,8 +7,7 @@ echo   Claude Code 自动任务执行器
 echo ========================================
 echo.
 
-:: 获取脚本所在目录并切换
-cd /d "%~dp0.."
+cd /d "e:\workspaces_2026_python\claude_code_cookbook\claude-code-24h-integration"
 
 :: 初始化任务系统
 echo [INFO] 初始化任务系统...
