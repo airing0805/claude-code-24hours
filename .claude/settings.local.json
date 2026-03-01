@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push origin master --set-upstream)",
+      "Bash(git config --list)",
+      "Bash(GIT_SSH_COMMAND=\"\" git -c http.proxy= -c https.proxy= push origin master --set-upstream)",
+      "Bash(curl -I --proxy http://127.0.0.1:7890 https://github.com)",
+      "Bash(GIT_ASKPASS= git push origin master --set-upstream)",
+      "Bash(git add README.md ecosystem.config.js scripts/add-task.bat scripts/start-pm2.bat)",
+      "Bash(git commit:*)",
+      "Bash(git push origin master)",
+      "Bash(apt install tmux -y)",
+      "Bash(yum install tmux -y)",
+      "Bash(pacman -S tmux --noconfirm)",
+      "Bash(powershell.exe -Command \"winget --version\")",
+      "Bash(~/.tmux.conf:*)"
+    ]
+  }
+}
