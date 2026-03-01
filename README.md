@@ -26,14 +26,14 @@
 
 ```bash
 # 使用启动脚本
-cd e:\workspaces_2026_python\claude_code_cookbook\claude-code-24h-integration
+cd /path/to/claude-code-24h-integration
 scripts\start-pm2.bat
 ```
 
 **或使用 PM2 命令：**
 
 ```bash
-cd e:\workspaces_2026_python\claude_code_cookbook\claude-code-24h-integration
+cd /path/to/claude-code-24h-integration
 pm2 start ecosystem.config.js
 pm2 save
 ```

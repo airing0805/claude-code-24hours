@@ -2,7 +2,7 @@
 chcp 65001 >nul
 setlocal enabledelayedexpansion
 
-cd /d "e:\workspaces_2026_python\claude_code_cookbook\claude-code-24h-integration"
+cd /d "%~dp0.."
 
 echo ========================================
 echo   Claude Code 任务提交工具

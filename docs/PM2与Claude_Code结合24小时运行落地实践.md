@@ -145,15 +145,15 @@ node src/add-task.js "代码审查" -w e:/project -t 300000 -y --tools Read,Grep
 
 ```batch
 REM 1. 进入整合目录
-cd /d e:\workspaces_2026_python\claude_code_cookbook\claude-code-24h-integration
+cd /d /path/to/claude-code-24h-integration
 
 REM 2. 运行初始化脚本（创建必要的目录和文件）
 node scripts\init-tasks.js
 
 REM 输出示例：
 REM 🔧 初始化 Claude Code 24小时任务系统...
-REM ✅ 创建目录: e:\...\tasks
-REM ✅ 创建目录: e:\...\logs
+REM ✅ 创建目录: .\tasks
+REM ✅ 创建目录: .\logs
 REM ✅ 创建任务文件: queue.json
 REM ✅ 创建任务文件: completed.json
 REM ✅ 创建任务文件: failed.json
@@ -236,11 +236,11 @@ REM 1. 打开启动文件夹
 shell:startup
 
 REM 2. 创建快捷方式，目标指向：
-e:\workspaces_2026_python\claude_code_cookbook\claude-code-24h-integration\scripts\start-pm2.bat
+/path/to/claude-code-24h-integration\scripts\start-pm2.bat
 
 REM 或创建批处理文件 start-claude.bat，内容：
 @echo off
-cd /d e:\workspaces_2026_python\claude_code_cookbook\claude-code-24h-integration
+cd /d /path/to/claude-code-24h-integration
 pm2 resurrect
 exit
 ```
@@ -641,7 +641,7 @@ echo ========================================
 echo   紧急恢复脚本
 echo ========================================
 
-cd /d "e:\workspaces_2026_python\claude_code_cookbook\claude-code-24h-integration"
+cd /d "/path/to/claude-code-24h-integration"
 
 echo.
 echo [1/5] 停止所有 PM2 进程...
@@ -785,7 +785,7 @@ node src/add-task.js "只读操作" --tools read_file,search_codebase
 
 ```bash
 # 1. 进入整合目录
-cd /d e:\workspaces_2026_python\claude_code_cookbook\claude-code-24h-integration
+cd /d /path/to/claude-code-24h-integration
 
 # 2. 创建日志目录（如果不存在）
 mkdir logs

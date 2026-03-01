@@ -14,7 +14,21 @@
       "Bash(pacman -S tmux --noconfirm)",
       "Bash(powershell.exe -Command \"winget --version\")",
       "Bash(~/.tmux.conf:*)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(git pull)",
+      "Bash(git remote set-url --push origin https://gitee.com/andy0805/claude-code-24hours.git)",
+      "Bash(git remote set-url --delete origin https://github.com/airing0805/claude-code-24hours.git)",
+      "Bash(git remote remove origin)",
+      "Bash(git remote add origin https://gitee.com/andy0805/claude-code-24hours.git)",
+      "Bash(git remote add github https://github.com/airing0805/claude-code-24hours.git)",
+      "mcp__filesystem__list_directory",
+      "Bash(git pull)",
+      "Bash(git remote set-url --push origin https://gitee.com/andy0805/claude-code-24hours.git)",
+      "Bash(git remote set-url --delete origin https://github.com/airing0805/claude-code-24hours.git)",
+      "Bash(git remote remove origin)",
+      "Bash(git remote add origin https://gitee.com/andy0805/claude-code-24hours.git)",
+      "Bash(git remote add github https://github.com/airing0805/claude-code-24hours.git)",
+      "mcp__filesystem__list_directory"
     ]
   }
 }

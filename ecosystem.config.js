@@ -2,7 +2,7 @@ module.exports = {
   apps: [{
     name: 'claude-runner',
     script: './src/auto-runner.js',
-    cwd: 'e:/workspaces_2026_python/claude_code_cookbook/claude-code-24h-integration',
+    cwd: '.',
     interpreter: 'node',
 
     // 进程管理
