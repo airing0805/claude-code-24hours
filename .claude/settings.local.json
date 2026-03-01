@@ -13,7 +13,8 @@
       "Bash(yum install tmux -y)",
       "Bash(pacman -S tmux --noconfirm)",
       "Bash(powershell.exe -Command \"winget --version\")",
-      "Bash(~/.tmux.conf:*)"
+      "Bash(~/.tmux.conf:*)",
+      "Bash(git push)"
     ]
   }
 }

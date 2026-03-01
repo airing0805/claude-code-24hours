@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -I https://github.com --connect-timeout 10)",
+      "Bash(curl -I https://gitee.com --connect-timeout 10)"
+    ]
+  }
+}
