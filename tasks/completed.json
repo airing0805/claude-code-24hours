@@ -3395,6 +3395,36 @@
       "scheduledId": "coach-review-plans",
       "completedAt": "2026-03-01 07:51:11",
       "status": "success"
+    },
+    {
+      "id": "test-task-001",
+      "prompt": "echo 'Hello from CLI plugin test'",
+      "workspace": "E:\\workspaces_2026_python\\claude-code-24h-integration",
+      "autoApprove": true,
+      "timeout": 60000,
+      "cliType": "claude",
+      "completedAt": "2026-03-02 00:35:10",
+      "status": "success"
+    },
+    {
+      "id": "test-task-001",
+      "prompt": "echo 'Hello from CLI plugin test'",
+      "workspace": "E:\\workspaces_2026_python\\claude-code-24h-integration",
+      "autoApprove": true,
+      "timeout": 60000,
+      "cliType": "claude",
+      "completedAt": "2026-03-02 00:35:17",
+      "status": "success"
+    },
+    {
+      "id": "test-task-001",
+      "prompt": "echo 'Hello from CLI plugin test'",
+      "workspace": "E:\\workspaces_2026_python\\claude-code-24h-integration",
+      "autoApprove": true,
+      "timeout": 60000,
+      "cliType": "claude",
+      "completedAt": "2026-03-02 00:35:17",
+      "status": "success"
     }
   ]
 }

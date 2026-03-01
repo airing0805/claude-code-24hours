@@ -2,19 +2,27 @@ const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const { toLocalTimeString, log } = require('./utils');
-const { CONFIG } = require('./task-manager');
+const { CONFIG, writeJsonFile } = require('./task-manager');
+const CliPluginManager = require('./cli-plugin-manager');
+
+// 初始化 CLI 插件管理器
+const cliPluginManager = new CliPluginManager();
 
 /**
  * 执行单个任务
+ * @param {Object} task - 任务对象
+ * @param {string} task.cliType - CLI类型（claude, qoder等）
  */
 async function executeTask(task) {
   return new Promise((resolve, reject) => {
     const timeout = task.timeout || CONFIG.taskTimeout;
     const workspace = task.workspace || path.join(__dirname, '..');
+    const cliType = task.cliType || cliPluginManager.getDefaultCliType();
 
     log.info(`开始执行任务: ${task.id}${task.scheduled ? ' (定时任务)' : ''}`);
     log.info(`任务描述: ${task.prompt}`);
     log.info(`工作目录: ${workspace}`);
+    log.info(`CLI类型: ${cliType}`);
 
     // 删除旧的 running.json（如果有）
     if (fs.existsSync(CONFIG.runningFile)) {
@@ -22,47 +30,55 @@ async function executeTask(task) {
     }
 
     // 记录运行中的任务
-    const { writeJsonFile } = require('./task-manager');
     writeJsonFile(CONFIG.runningFile, {
       ...task,
       startedAt: toLocalTimeString(new Date())
     });
 
-    // 构建 Claude Code 命令
-    const args = [];
-
-    // 添加其他参数
-    if (task.allowedTools && task.allowedTools.length > 0) {
-      args.push('--allowedTools', task.allowedTools.join(','));
-    }
-
-    // 是否自动确认（危险操作需要手动确认）
-    if (task.autoApprove) {
-      args.push('--dangerously-skip-permissions');
+    // 获取 CLI 插件并构建命令
+    let commandConfig;
+    try {
+      const plugin = cliPluginManager.getPlugin(cliType);
+      commandConfig = plugin.buildCommand(task);
+    } catch (error) {
+      log.error(`CLI插件错误: ${error.message}`);
+      reject(error);
+      return;
     }
 
     // 创建环境变量，移除 CLAUDECODE 以允许嵌套会话
     const childEnv = { ...process.env, NODE_ENV: 'production' };
     delete childEnv.CLAUDECODE;
 
-    log.info(`执行命令: claude ${args.join(' ')} < prompt via stdin`);
+    // 构建最终命令
+    let spawnCommand;
+    let spawnArgs;
 
-    // 使用 stdin 传递 prompt，避免 shell 解析中文参数的问题
-    // 在 shell 模式下，显式设置命令字符串以清除 CLAUDECODE
-    const command = 'set CLAUDECODE= && claude ' + args.join(' ');
-    const child = spawn(command, {
-      cwd: workspace,
+    if (process.platform === 'win32') {
+      // Windows: 使用 cmd.exe 并清除 CLAUDECODE
+      spawnCommand = `cmd.exe`;
+      spawnArgs = ['/c', `set CLAUDECODE= && ${commandConfig.command} ${commandConfig.args.join(' ')}`];
+    } else {
+      // Unix/Linux/Mac: 使用 env 清除 CLAUDECODE
+      spawnCommand = 'env';
+      spawnArgs = ['-u', 'CLAUDECODE', commandConfig.command, ...commandConfig.args];
+    }
+
+    log.info(`执行命令: ${commandConfig.command} ${commandConfig.args.join(' ')}`);
+
+    const child = spawn(spawnCommand, spawnArgs, {
+      cwd: commandConfig.cwd || workspace,
       stdio: ['pipe', 'pipe', 'pipe'],
-      shell: true,  // Windows 需要 shell 才能找到 claude 命令
+      shell: false,
       env: childEnv,
       windowsHide: true
     });
 
-    // 通过 stdin 传递 prompt
-    if (task.prompt) {
-      child.stdin?.write(task.prompt);
+    // 通过 stdin 传递 prompt（如果配置使用 stdin）
+    if (commandConfig.stdinInput && child.stdin) {
+      child.stdin.write(commandConfig.stdinInput);
+      child.stdin.end();
     }
-    child.stdin?.end();
 
     // 捕获输出
     child.stdout?.on('data', (data) => {
@@ -100,4 +116,4 @@ async function executeTask(task) {
   });
 }
 
-module.exports = { executeTask };
+module.exports = { executeTask, cliPluginManager };
